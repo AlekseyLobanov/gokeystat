@@ -34,7 +34,7 @@ func main() {
 			log.Fatal(err)
 		}
 		// processing buf here
-		fmt.Println(len(buf), n)
-		time.Sleep(5 * time.Second)
+		fmt.Println(n)
+		time.Sleep(SLEEP_TIME)
 	}
 }

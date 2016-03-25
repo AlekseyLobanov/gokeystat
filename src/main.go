@@ -15,7 +15,7 @@ const (
 )
 
 // Extract pressed keys from bufer buf
-// It retruns slice with key numbers in the same order
+// It returns slice with key numbers in the same order
 func GetKeyNumsFromOutput(buf []byte) []uint8 {
 	return make([]uint8, 0)
 }

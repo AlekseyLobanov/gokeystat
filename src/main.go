@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -17,7 +18,20 @@ const (
 // Extract pressed keys from bufer buf
 // It returns slice with key numbers in the same order
 func GetKeyNumsFromOutput(buf []byte) []uint8 {
-	return make([]uint8, 0)
+	const KEY_NUM_STRING_RE = "press[ ]+(\\d+)"
+	re := regexp.MustCompile(KEY_NUM_STRING_RE)
+	res_byte := re.FindAll(buf, -1)
+	keyNums := make([]uint8, len(res_byte))
+	re = regexp.MustCompile("\\d+")
+	for i, line := range res_byte {
+		num_byte := re.Find(line)
+		if num, err := strconv.Atoi(string(num_byte)); err == nil {
+			keyNums[i] = uint8(num)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	return keyNums
 }
 
 func main() {

@@ -14,6 +14,12 @@ const (
 	KEYBOARD_BUFER_SIZE = 10000
 )
 
+// Extract pressed keys from bufer buf
+// It retruns slice with key numbers in the same order
+func GetKeyNumsFromOutput(buf []byte) []uint8 {
+	return make([]uint8, 0)
+}
+
 func main() {
 
 	keyboard_id := 14

@@ -13,7 +13,6 @@ import (
 const (
 	SLEEP_TIME          = 3 * time.Second
 	KEYBOARD_BUFER_SIZE = 10000
-	KEYMAP_BUFFER_SIZE  = 32000
 )
 
 // Return map from key numbers to key names like "F1", "Tab", "d"

@@ -40,12 +40,12 @@ func GetKeymapFromOutput(buf []byte) map[uint8]string {
 func GetKeyNumsFromOutput(buf []byte) []uint8 {
 	const KEY_NUM_STRING_RE = "press[ ]+(\\d+)"
 	re := regexp.MustCompile(KEY_NUM_STRING_RE)
-	res_byte := re.FindAll(buf, -1)
-	keyNums := make([]uint8, len(res_byte))
+	resByte := re.FindAll(buf, -1)
+	keyNums := make([]uint8, len(resByte))
 	re = regexp.MustCompile("\\d+")
-	for i, line := range res_byte {
-		num_byte := re.Find(line)
-		if num, err := strconv.Atoi(string(num_byte)); err == nil {
+	for i, line := range resByte {
+		numByte := re.Find(line)
+		if num, err := strconv.Atoi(string(numByte)); err == nil {
 			keyNums[i] = uint8(num)
 		} else {
 			log.Fatal(err)
@@ -56,8 +56,8 @@ func GetKeyNumsFromOutput(buf []byte) []uint8 {
 
 func main() {
 
-	keyboard_id := 14
-	cmd := exec.Command("xinput", "test", strconv.Itoa(keyboard_id))
+	keyboardID := 14
+	cmd := exec.Command("xinput", "test", strconv.Itoa(keyboardID))
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

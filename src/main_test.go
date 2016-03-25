@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetKeyNumsFromOutput(t *testing.T) {
-	var buf []byte // = {"key press   41k ey press   41"}
+	var buf []byte
 	var keyNums []uint8
 
 	const test1 = "key press 36\nkey release 41\nkey press   41"

@@ -13,8 +13,25 @@ import (
 const (
 	SLEEP_TIME          = 3 * time.Second
 	KEYBOARD_BUFER_SIZE = 10000
+	KEYMAP_BUFFER_SIZE  = 32000
 )
 
+// Return map from key numbers to key names like "F1", "Tab", "d"
+func GetKeymap() map[uint8]string {
+	return GetKeymapFromOutput(GetKeymapOutput())
+}
+
+// Return output of utility that prints system keymap
+func GetKeymapOutput() []byte {
+	cmd := exec.Command("xmodmap", "-pke")
+	out, err := cmd.Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return out
+}
+
+// Return map with keymap from text
 func GetKeymapFromOutput(buf []byte) map[uint8]string {
 	return make(map[uint8]string)
 }

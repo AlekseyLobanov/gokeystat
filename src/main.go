@@ -15,6 +15,10 @@ const (
 	KEYBOARD_BUFER_SIZE = 10000
 )
 
+func GetKeymapFromOutput(buf []byte) map[uint8]string {
+	return make(map[uint8]string)
+}
+
 // Extract pressed keys from bufer buf
 // It returns slice with key numbers in the same order
 func GetKeyNumsFromOutput(buf []byte) []uint8 {

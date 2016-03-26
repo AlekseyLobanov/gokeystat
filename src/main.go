@@ -24,7 +24,7 @@ const (
 
 type StatForTime struct {
 	time int
-	keys map[string]int
+	keys map[uint8]int
 }
 
 // Return map from key numbers to key names like "F1", "Tab", "d"

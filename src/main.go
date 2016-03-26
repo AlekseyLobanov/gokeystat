@@ -18,7 +18,7 @@ import (
 const (
 	SLEEP_TIME          = 3 * time.Second
 	KEYBOARD_BUFER_SIZE = 10000
-	DATABASE_NAME       = "./gokeystat.db"
+	DATABASE_NAME       = "file:gokeystat.db?cache=shared&mode=rwc"
 	CAPTURE_TIME        = 5 // time in seconds between capturing keyboard to db
 )
 
@@ -101,26 +101,22 @@ func InitDb(db *sql.DB, keyMap map[uint8]string) {
 		sqlInit += ",\n" + "KEY" + strconv.Itoa(keyNum) + " INTEGER"
 	}
 	sqlInit += "\n);"
+
+	// Inserting keymap to table
+	sqlInit += ` CREATE TABLE IF NOT EXISTS keymap (
+        num INTEGER primary key,
+		value STRING
+	);`
+
 	_, err := db.Exec(sqlInit)
 	if err != nil {
 		log.Fatalf("%q: %s\n", err, sqlInit)
 	}
 
-	// Inserting keymap to table
-	sqlInit = `CREATE TABLE IF NOT EXISTS keymap (
-        num INTEGER primary key,
-		value STRING
-	);`
-
-	_, err = db.Exec(sqlInit)
-	if err != nil {
-		log.Fatalf("%q: %s\n", err, sqlInit)
-	}
-	rows, err := db.Query("select COUNT(*) from keymap")
+	rows, err := db.Query("SELECT COUNT(*) FROM keymap")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
 
 	var rowsCount int
 	rows.Next()
@@ -129,12 +125,13 @@ func InitDb(db *sql.DB, keyMap map[uint8]string) {
 		// already inserted keymap
 		return
 	}
+	rows.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
-	stmt, err := tx.Prepare("insert into keymap(num, value) values(?, ?)")
+	stmt, err := tx.Prepare("INSERT INTO keymap(num, value) VALUES(?, ?)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -162,10 +159,17 @@ func AddStatTimeToDb(db *sql.DB, statTime StatForTime, keyMap map[uint8]string) 
 		sqlStmt += ",\n" + strconv.Itoa(keyNumber)
 	}
 	sqlStmt += ")"
-	_, err := db.Exec(sqlStmt)
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = tx.Exec(sqlStmt)
 	if err != nil {
 		log.Printf("%q: %s\n", err, sqlStmt)
 	}
+
+	tx.Commit()
 }
 
 // Returns slice with StatForTime objects that
@@ -247,7 +251,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		db.SetMaxIdleConns(5)
+		db.SetMaxOpenConns(5)
 		defer db.Close()
+
 		keyMap := GetKeymap()
 
 		InitDb(db, keyMap)

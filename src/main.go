@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os/exec"
@@ -67,25 +68,36 @@ func GetKeyNumsFromOutput(buf []byte) []uint8 {
 
 func main() {
 
-	keyboardID := 14
-	cmd := exec.Command("xinput", "test", strconv.Itoa(keyboardID))
+	keyboardId := flag.Int("id", -1, "Your keyboard id")
+	outputPath := flag.String("o", "", "Path to export file")
+	flag.Parse()
+	log.Println("keyboardId =", *keyboardId, "outputPath =", *outputPath)
+	switch {
+	case *keyboardId == -1 && *outputPath == "":
+		flag.PrintDefaults()
+		return
+	case *keyboardId != -1:
+		cmd := exec.Command("xinput", "test", strconv.Itoa(*keyboardId))
 
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	buf := make([]byte, KEYBOARD_BUFER_SIZE)
-	for {
-		n, err := stdout.Read(buf)
+		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Fatal(err)
 		}
-		// processing buf here
-		fmt.Println(n)
-		time.Sleep(SLEEP_TIME)
+		if err := cmd.Start(); err != nil {
+			log.Fatal(err)
+		}
+
+		buf := make([]byte, KEYBOARD_BUFER_SIZE)
+		for {
+			n, err := stdout.Read(buf)
+			if err != nil {
+				log.Fatal(err)
+			}
+			// processing buf here
+			fmt.Println(n)
+			time.Sleep(SLEEP_TIME)
+		}
+	case *outputPath != "":
+		//exporting here
 	}
 }

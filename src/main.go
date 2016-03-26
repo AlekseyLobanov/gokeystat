@@ -241,21 +241,23 @@ func main() {
 	outputPath := flag.String("o", "", "Path to export file")
 	flag.Parse()
 	log.Println("keyboardId =", *keyboardId, "outputPath =", *outputPath)
+
+	// Opening database
+	db, err := sql.Open("sqlite3", DATABASE_NAME)
+	if err != nil {
+		log.Fatal(err)
+	}
+	db.SetMaxIdleConns(5)
+	db.SetMaxOpenConns(5)
+	defer db.Close()
+
+	keyMap := GetKeymap()
+
 	switch {
 	case *keyboardId == -1 && *outputPath == "":
 		flag.PrintDefaults()
 		return
 	case *keyboardId != -1:
-		// Opening database
-		db, err := sql.Open("sqlite3", DATABASE_NAME)
-		if err != nil {
-			log.Fatal(err)
-		}
-		db.SetMaxIdleConns(5)
-		db.SetMaxOpenConns(5)
-		defer db.Close()
-
-		keyMap := GetKeymap()
 
 		InitDb(db, keyMap)
 
@@ -295,6 +297,7 @@ func main() {
 			time.Sleep(SLEEP_TIME)
 		}
 	case *outputPath != "":
-		//exporting here
+		exportingData := GetStatTimesFromDb(db, 0, keyMap) //exporting here
+		SaveToCsvFile(exportingData, keyMap, *outputPath, false)
 	}
 }

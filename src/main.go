@@ -2,6 +2,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -10,12 +11,21 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
 	SLEEP_TIME          = 3 * time.Second
 	KEYBOARD_BUFER_SIZE = 10000
+	DATABASE_NAME       = "./gokeystat.db"
+	CAPTURE_TIME        = 5 * time.Second // time between capturing keyboard to db
 )
+
+type StatForTime struct {
+	time int
+	keys map[string]int
+}
 
 // Return map from key numbers to key names like "F1", "Tab", "d"
 func GetKeymap() map[uint8]string {
@@ -66,9 +76,52 @@ func GetKeyNumsFromOutput(buf []byte) []uint8 {
 	return keyNums
 }
 
-type StatForTime struct {
-	time int
-	keys map[string]int
+func InitDb(db *sql.DB, keyMap map[uint8]string) {
+	keyNums := make([]int, 0, len(keyMap))
+	for keyNum := range keyMap {
+		keyNums = append(keyNums, int(keyNum))
+	}
+
+	sqlInit := `CREATE TABLE IF NOT EXISTS keylog (
+        time INTEGER primary key`
+
+	for keyNum := range keyNums {
+		sqlInit += ",\n" + "KEY" + strconv.Itoa(keyNum) + " INTEGER"
+	}
+	sqlInit += "\n);"
+	_, err := db.Exec(sqlInit)
+	if err != nil {
+		log.Fatalf("%q: %s\n", err, sqlInit)
+	}
+
+	// Inserting keymap to table
+	sqlInit = `CREATE TABLE IF NOT EXISTS keymap (
+        num INTEGER primary key,
+		value STRING
+	);`
+
+	_, err = db.Exec(sqlInit)
+	if err != nil {
+		log.Fatalf("%q: %s\n", err, sqlInit)
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	stmt, err := tx.Prepare("insert into keymap(num, value) values(?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	for keyNum, keyName := range keyMap {
+		_, err = stmt.Exec(keyNum, keyName)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	tx.Commit()
 }
 
 func main() {
@@ -82,6 +135,15 @@ func main() {
 		flag.PrintDefaults()
 		return
 	case *keyboardId != -1:
+		// Opening database
+		db, err := sql.Open("sqlite3", DATABASE_NAME)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+		keyMap := GetKeymap()
+
+		InitDb(db, keyMap)
 		cmd := exec.Command("xinput", "test", strconv.Itoa(*keyboardId))
 
 		stdout, err := cmd.StdoutPipe()

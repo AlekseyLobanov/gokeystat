@@ -66,6 +66,11 @@ func GetKeyNumsFromOutput(buf []byte) []uint8 {
 	return keyNums
 }
 
+type StatForTime struct {
+	time int
+	keys map[string]int
+}
+
 func main() {
 
 	keyboardId := flag.Int("id", -1, "Your keyboard id")

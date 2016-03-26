@@ -2,7 +2,10 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
 	"math/rand"
+	"os"
 	"testing"
 )
 
@@ -20,8 +23,17 @@ func BenchmarkCsvSavingOnlySum(b *testing.B) {
 		}
 		data = append(data, curStat)
 	}
+
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "benchmark")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer os.Remove(tmpFile.Name())
+
 	b.ResetTimer()
-	SaveToCsvFile(data, keyMap, "/tmp/bla.csv", true)
+
+	SaveToCsvWriter(data, keyMap, tmpFile, true)
 }
 
 func BenchmarkCsvSaving(b *testing.B) {
@@ -38,6 +50,14 @@ func BenchmarkCsvSaving(b *testing.B) {
 		}
 		data = append(data, curStat)
 	}
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "benchmark")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer os.Remove(tmpFile.Name())
+
 	b.ResetTimer()
-	SaveToCsvFile(data, keyMap, "/tmp/bla.csv", false)
+
+	SaveToCsvWriter(data, keyMap, tmpFile, false)
 }

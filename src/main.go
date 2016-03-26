@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,7 +33,17 @@ func GetKeymapOutput() []byte {
 
 // Return map with keymap from text
 func GetKeymapFromOutput(buf []byte) map[uint8]string {
-	return make(map[uint8]string)
+	const KEY_NUM_STRING_RE = "\\d+[ ]*=[ ]*\\S+"
+	re := regexp.MustCompile(KEY_NUM_STRING_RE)
+	resByte := re.FindAll(buf, -1)
+	keyMap := make(map[uint8]string)
+	for _, line := range resByte {
+		lineSpitted := strings.Split(string(line), " ")
+		if key, err := strconv.Atoi(lineSpitted[0]); err == nil {
+			keyMap[uint8(key)] = lineSpitted[2]
+		}
+	}
+	return keyMap
 }
 
 // Extract pressed keys from bufer buf

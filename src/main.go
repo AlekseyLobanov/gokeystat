@@ -16,12 +16,13 @@ import (
 )
 
 const (
-	SLEEP_TIME          = 3 * time.Second
+	SLEEP_TIME          = 3 * time.Second // time between processing xinput output
 	KEYBOARD_BUFER_SIZE = 10000
 	DATABASE_NAME       = "file:gokeystat.db?cache=shared&mode=rwc"
 	CAPTURE_TIME        = 5 // time in seconds between capturing keyboard to db
 )
 
+// StatForTime stotres pressed keys and beginning time
 type StatForTime struct {
 	time int64
 	keys map[uint8]int
@@ -32,12 +33,12 @@ func (stat *StatForTime) Init() {
 	stat.keys = make(map[uint8]int)
 }
 
-// Return map from key numbers to key names like "F1", "Tab", "d"
+// GetKeymap returns map from key numbers to key names like "F1", "Tab", "d"
 func GetKeymap() map[uint8]string {
 	return GetKeymapFromOutput(GetKeymapOutput())
 }
 
-// Return output of utility that prints system keymap
+// GetKeymapOutput returns output of utility that prints system keymap
 func GetKeymapOutput() []byte {
 	cmd := exec.Command("xmodmap", "-pke")
 	out, err := cmd.Output()
@@ -47,7 +48,7 @@ func GetKeymapOutput() []byte {
 	return out
 }
 
-// Return map with keymap from text
+// GetKeymapFromOutput returns map with keymap from text
 func GetKeymapFromOutput(buf []byte) map[uint8]string {
 	const KEY_NUM_STRING_RE = "\\d+[ ]*=[ ]*\\S+"
 	re := regexp.MustCompile(KEY_NUM_STRING_RE)
@@ -62,7 +63,7 @@ func GetKeymapFromOutput(buf []byte) map[uint8]string {
 	return keyMap
 }
 
-// Extract pressed keys from bufer buf
+// GetKeyNumsFromOutput extract pressed keys from bufer buf
 // It returns slice with key numbers in the same order
 func GetKeyNumsFromOutput(buf []byte) []uint8 {
 	const KEY_NUM_STRING_RE = "press[ ]+(\\d+)"
@@ -90,7 +91,7 @@ func GetKeyNumsFromKeyMap(keyMap map[uint8]string) []int {
 	return res
 }
 
-// Creates tables, inserts keymap to db
+// InitDb creates tables, inserts keymap to db
 func InitDb(db *sql.DB, keyMap map[uint8]string) {
 	keyNums := GetKeyNumsFromKeyMap(keyMap)
 
@@ -172,7 +173,7 @@ func AddStatTimeToDb(db *sql.DB, statTime StatForTime, keyMap map[uint8]string) 
 	tx.Commit()
 }
 
-// Returns slice with StatForTime objects that
+// GetStatTimesFromDb returns slice with StatForTime objects that
 func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []StatForTime {
 	sqlStmt := "select * from keylog where time > " + strconv.FormatInt(fromTime, 10)
 	rows, err := db.Query(sqlStmt)
@@ -190,7 +191,7 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 	result := make([]int64, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -237,10 +238,11 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 
 func main() {
 
-	keyboardId := flag.Int("id", -1, "Your keyboard id")
+	keyboardID := flag.Int("id", -1, "Your keyboard id")
 	outputPath := flag.String("o", "", "Path to export file")
 	flag.Parse()
-	log.Println("keyboardId =", *keyboardId, "outputPath =", *outputPath)
+
+	log.Println("keyboardID =", *keyboardID, "outputPath =", *outputPath)
 
 	// Opening database
 	db, err := sql.Open("sqlite3", DATABASE_NAME)
@@ -253,15 +255,15 @@ func main() {
 
 	keyMap := GetKeymap()
 
+	InitDb(db, keyMap)
+
 	switch {
-	case *keyboardId == -1 && *outputPath == "":
+	case *keyboardID == -1 && *outputPath == "":
 		flag.PrintDefaults()
 		return
-	case *keyboardId != -1:
+	case *keyboardID != -1:
 
-		InitDb(db, keyMap)
-
-		cmd := exec.Command("xinput", "test", strconv.Itoa(*keyboardId))
+		cmd := exec.Command("xinput", "test", strconv.Itoa(*keyboardID))
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {

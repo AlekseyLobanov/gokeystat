@@ -3,16 +3,17 @@ package main
 
 import (
 	"encoding/csv"
+	"io"
 	"log"
 	"os"
 	"sort"
 	"strconv"
 )
 
-func SaveToCsvFile(data []StatForTime, keymap map[uint8]string, path string, isOnlySum bool) {
+func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, isOnlySum bool) {
 
 	numKeysInt := make([]int, 0)
-	for key := range keymap {
+	for key := range keyMap {
 		numKeysInt = append(numKeysInt, int(key))
 	}
 	sort.Ints(numKeysInt)
@@ -25,7 +26,7 @@ func SaveToCsvFile(data []StatForTime, keymap map[uint8]string, path string, isO
 	titleLine = append(titleLine, "Time")
 	if !isOnlySum {
 		for _, key := range numKeys {
-			titleLine = append(titleLine, keymap[key])
+			titleLine = append(titleLine, keyMap[key])
 		}
 	}
 	titleLine = append(titleLine, "Sum")
@@ -46,12 +47,17 @@ func SaveToCsvFile(data []StatForTime, keymap map[uint8]string, path string, isO
 		table = append(table, line)
 	}
 
+	writer := csv.NewWriter(writerOut)
+	writer.WriteAll(table)
+}
+
+func SaveToCsvFile(data []StatForTime, keyMap map[uint8]string, path string, isOnlySum bool) {
 	csvfile, err := os.Create(path)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 	defer csvfile.Close()
-	writer := csv.NewWriter(csvfile)
-	writer.WriteAll(table)
+
+	SaveToCsvWriter(data, keyMap, csvfile, isOnlySum)
 }

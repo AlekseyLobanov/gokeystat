@@ -90,6 +90,7 @@ func GetKeyNumsFromKeyMap(keyMap map[uint8]string) []int {
 	return res
 }
 
+// Creates tables, inserts keymap to db
 func InitDb(db *sql.DB, keyMap map[uint8]string) {
 	keyNums := GetKeyNumsFromKeyMap(keyMap)
 
@@ -167,6 +168,69 @@ func AddStatTimeToDb(db *sql.DB, statTime StatForTime, keyMap map[uint8]string) 
 	}
 }
 
+// Returns slice with StatForTime objects that
+func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []StatForTime {
+	sqlStmt := "select * from keylog where time > " + strconv.FormatInt(fromTime, 10)
+	rows, err := db.Query(sqlStmt)
+	if err != nil {
+		log.Fatalln("Error with query", sqlStmt, " is ", err)
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		log.Fatalln("Failed to get columns", err)
+	}
+
+	rawResult := make([][]byte, len(cols))
+	result := make([]int64, len(cols))
+
+	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
+	for i, _ := range rawResult {
+		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
+	}
+
+	// keyNums[i] stores i-th keynum
+	keyNums := GetKeyNumsFromKeyMap(keyMap)
+
+	// result
+	res := make([]StatForTime, 0)
+	for rows.Next() {
+		err = rows.Scan(dest...)
+		if err != nil {
+			log.Fatalln("Failed to scan row", err)
+		}
+
+		for i, raw := range rawResult {
+			if raw == nil {
+				result[i] = 0
+			} else {
+				// Only numbers in db: converting it to int64
+				result[i], err = strconv.ParseInt(string(raw), 10, 64)
+				if err != nil {
+					log.Fatalln("Error when parsing ", raw, " from db:", err)
+				}
+			}
+		}
+
+		var resStatTime StatForTime
+		resStatTime.time = result[0]
+		resStatTime.keys = make(map[uint8]int)
+		for index, val := range result[1:] {
+			if val == 0 {
+				continue
+			}
+			resStatTime.keys[uint8(keyNums[index])] = int(val)
+		}
+		res = append(res, resStatTime)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatalln("Error when iterating over rows", err)
+	}
+
+	return res
+}
+
 func main() {
 
 	keyboardId := flag.Int("id", -1, "Your keyboard id")
@@ -198,9 +262,12 @@ func main() {
 			log.Fatal(err)
 		}
 
+		// output of xinput command
 		buf := make([]byte, KEYBOARD_BUFER_SIZE)
+
 		var curStat StatForTime
 		curStat.Init()
+
 		for {
 			n, err := stdout.Read(buf)
 			if err != nil {

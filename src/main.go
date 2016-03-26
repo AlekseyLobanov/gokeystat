@@ -4,10 +4,10 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	"log"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,12 +19,17 @@ const (
 	SLEEP_TIME          = 3 * time.Second
 	KEYBOARD_BUFER_SIZE = 10000
 	DATABASE_NAME       = "./gokeystat.db"
-	CAPTURE_TIME        = 5 * time.Second // time between capturing keyboard to db
+	CAPTURE_TIME        = 5 // time in seconds between capturing keyboard to db
 )
 
 type StatForTime struct {
-	time int
+	time int64
 	keys map[uint8]int
+}
+
+func (stat *StatForTime) Init() {
+	stat.time = time.Now().Unix()
+	stat.keys = make(map[uint8]int)
 }
 
 // Return map from key numbers to key names like "F1", "Tab", "d"
@@ -76,11 +81,17 @@ func GetKeyNumsFromOutput(buf []byte) []uint8 {
 	return keyNums
 }
 
-func InitDb(db *sql.DB, keyMap map[uint8]string) {
-	keyNums := make([]int, 0, len(keyMap))
+func GetKeyNumsFromKeyMap(keyMap map[uint8]string) []int {
+	res := make([]int, 0, len(keyMap))
 	for keyNum := range keyMap {
-		keyNums = append(keyNums, int(keyNum))
+		res = append(res, int(keyNum))
 	}
+	sort.Ints(res)
+	return res
+}
+
+func InitDb(db *sql.DB, keyMap map[uint8]string) {
+	keyNums := GetKeyNumsFromKeyMap(keyMap)
 
 	sqlInit := `CREATE TABLE IF NOT EXISTS keylog (
         time INTEGER primary key`
@@ -104,6 +115,19 @@ func InitDb(db *sql.DB, keyMap map[uint8]string) {
 	if err != nil {
 		log.Fatalf("%q: %s\n", err, sqlInit)
 	}
+	rows, err := db.Query("select COUNT(*) from keymap")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var rowsCount int
+	rows.Next()
+	rows.Scan(&rowsCount)
+	if rowsCount > 0 {
+		// already inserted keymap
+		return
+	}
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -122,6 +146,25 @@ func InitDb(db *sql.DB, keyMap map[uint8]string) {
 		}
 	}
 	tx.Commit()
+}
+
+func AddStatTimeToDb(db *sql.DB, statTime StatForTime, keyMap map[uint8]string) {
+	keyNums := GetKeyNumsFromKeyMap(keyMap)
+	sqlStmt := "insert into keylog(time"
+	for keyNum := range keyNums {
+		sqlStmt += ",\n" + "KEY" + strconv.Itoa(keyNum)
+	}
+	sqlStmt += ") values "
+	sqlStmt += "(" + strconv.FormatInt(statTime.time, 10)
+	for keyNum := range keyNums {
+		keyNumber, _ := statTime.keys[uint8(keyNum)]
+		sqlStmt += ",\n" + strconv.Itoa(keyNumber)
+	}
+	sqlStmt += ")"
+	_, err := db.Exec(sqlStmt)
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+	}
 }
 
 func main() {
@@ -144,6 +187,7 @@ func main() {
 		keyMap := GetKeymap()
 
 		InitDb(db, keyMap)
+
 		cmd := exec.Command("xinput", "test", strconv.Itoa(*keyboardId))
 
 		stdout, err := cmd.StdoutPipe()
@@ -155,13 +199,25 @@ func main() {
 		}
 
 		buf := make([]byte, KEYBOARD_BUFER_SIZE)
+		var curStat StatForTime
+		curStat.Init()
 		for {
 			n, err := stdout.Read(buf)
 			if err != nil {
 				log.Fatal(err)
 			}
 			// processing buf here
-			fmt.Println(n)
+			for _, keyNum := range GetKeyNumsFromOutput(buf[:n]) {
+				oldKeyCount, _ := curStat.keys[keyNum]
+				curStat.keys[keyNum] = oldKeyCount + 1
+			}
+
+			// Every CAPTURE_TIME seconds save to BD
+			if time.Now().Unix()-curStat.time > CAPTURE_TIME {
+				AddStatTimeToDb(db, curStat, keyMap)
+				curStat.Init()
+			}
+
 			time.Sleep(SLEEP_TIME)
 		}
 	case *outputPath != "":

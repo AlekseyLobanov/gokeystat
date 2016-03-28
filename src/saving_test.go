@@ -57,3 +57,35 @@ func BenchmarkCsvSaving(b *testing.B) {
 
 	SaveToCsvWriter(data, keyMap, tmpFile, true)
 }
+
+func BenchmarkJSONSavingOnlySum(b *testing.B) {
+	data := GenerateRandStatsForTime(b.N)
+	keyMap := GetKeymap()
+
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "benchmark")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer os.Remove(tmpFile.Name())
+
+	b.ResetTimer()
+
+	SaveToJSONWriter(data, keyMap, tmpFile, false)
+}
+
+func BenchmarkJSONSaving(b *testing.B) {
+	data := GenerateRandStatsForTime(b.N)
+	keyMap := GetKeymap()
+
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "benchmark")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer os.Remove(tmpFile.Name())
+
+	b.ResetTimer()
+
+	SaveToJSONWriter(data, keyMap, tmpFile, true)
+}

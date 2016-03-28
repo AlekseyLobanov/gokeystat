@@ -236,6 +236,10 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 	return res
 }
 
+func FindFileType(path string) string {
+
+}
+
 func main() {
 
 	keyboardID := flag.Int("id", -1, "Your keyboard id")
@@ -300,9 +304,8 @@ func main() {
 			time.Sleep(SLEEP_TIME)
 		}
 	case *outputPath != "":
-		re := regexp.MustCompile("\\.\\S+")
-		filetype := re.FindString(*outputPath)
 		exportingData := GetStatTimesFromDb(db, 0, keyMap)
+		filetype := findFileType(*outputPath)
 		log.Println(filetype)
 		switch filetype {
 		case ".csv":

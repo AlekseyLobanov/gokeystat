@@ -146,6 +146,13 @@ func SaveToJSLFile(data []StatForTime, keyMap map[uint8]string, path string, ful
 	SaveToJSLWriter(data, keyMap, jslFile, fullExport)
 }
 
+func SaveToCsvGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
+	gzipWriter := gzip.NewWriter(writerOut)
+	defer gzipWriter.Close()
+
+	SaveToCsvWriter(data, keyMap, gzipWriter, fullExport)
+}
+
 func SaveToCsvGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	jsonFile, err := os.Create(path)
 	if err != nil {
@@ -157,6 +164,13 @@ func SaveToCsvGzFile(data []StatForTime, keyMap map[uint8]string, path string, f
 	defer gzipWriter.Close()
 
 	SaveToCsvWriter(data, keyMap, gzipWriter, fullExport)
+}
+
+func SaveToJSONGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
+	gzipWriter := gzip.NewWriter(writerOut)
+	defer gzipWriter.Close()
+
+	SaveToJSONWriter(data, keyMap, gzipWriter, fullExport)
 }
 
 func SaveToJSONGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
@@ -172,15 +186,19 @@ func SaveToJSONGzFile(data []StatForTime, keyMap map[uint8]string, path string, 
 	SaveToJSONWriter(data, keyMap, gzipWriter, fullExport)
 }
 
-func SaveToJSLGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
-	jsonFile, err := os.Create(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer jsonFile.Close()
-
-	gzipWriter := gzip.NewWriter(jsonFile)
+func SaveToJSLGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
+	gzipWriter := gzip.NewWriter(writerOut)
 	defer gzipWriter.Close()
 
 	SaveToJSLWriter(data, keyMap, gzipWriter, fullExport)
+}
+
+func SaveToJSLGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
+	jslFile, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jslFile.Close()
+
+	SaveToJSLGzWriter(data, keyMap, jslFile, fullExport)
 }

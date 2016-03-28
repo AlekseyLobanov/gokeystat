@@ -12,6 +12,8 @@ import (
 	"strconv"
 )
 
+// SaveToCsvWriter saves data to writerOut
+// if fullExport saves log for each key else only sum for keys
 func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 
 	numKeysInt := make([]int, 0)
@@ -53,6 +55,8 @@ func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.W
 	writer.WriteAll(table)
 }
 
+// SaveToCsvFile saves data to path
+// if fullExport saves log for each key else only sum for keys
 func SaveToCsvFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	csvfile, err := os.Create(path)
 	if err != nil {
@@ -64,6 +68,9 @@ func SaveToCsvFile(data []StatForTime, keyMap map[uint8]string, path string, ful
 	SaveToCsvWriter(data, keyMap, csvfile, fullExport)
 }
 
+// SaveToJSONWriter saves data to writerOut
+// if fullExport saves log for each key else only sum for keys
+// Save in one Json array
 func SaveToJSONWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 	type JSONStatForTime struct {
 		Time int64
@@ -93,6 +100,9 @@ func SaveToJSONWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.
 	writerOut.Write(outString)
 }
 
+// SaveToJSONFile saves data to path
+// if fullExport saves log for each key else only sum for keys
+// Save in one Json array
 func SaveToJSONFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	jsonFile, err := os.Create(path)
 	if err != nil {
@@ -103,6 +113,9 @@ func SaveToJSONFile(data []StatForTime, keyMap map[uint8]string, path string, fu
 	SaveToJSONWriter(data, keyMap, jsonFile, fullExport)
 }
 
+// SaveToJSONWriter saves data to writerOut
+// if fullExport saves log for each key else only sum for keys
+// Each record on new line
 func SaveToJSLWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 	type JSLStatForTime struct {
 		Time int64
@@ -136,6 +149,9 @@ func SaveToJSLWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.W
 	}
 }
 
+// SaveToJSONWriter saves data to path
+// if fullExport saves log for each key else only sum for keys
+// Each record on new line
 func SaveToJSLFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	jslFile, err := os.Create(path)
 	if err != nil {
@@ -146,6 +162,7 @@ func SaveToJSLFile(data []StatForTime, keyMap map[uint8]string, path string, ful
 	SaveToJSLWriter(data, keyMap, jslFile, fullExport)
 }
 
+// SaveToCsvGzWriter same as SaveToCsvWriter but gunzip file before saving
 func SaveToCsvGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 	gzipWriter := gzip.NewWriter(writerOut)
 	defer gzipWriter.Close()
@@ -153,6 +170,7 @@ func SaveToCsvGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io
 	SaveToCsvWriter(data, keyMap, gzipWriter, fullExport)
 }
 
+// SaveToCsvGzFile same as SaveToCsvFile but gunzip file before saving
 func SaveToCsvGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	jsonFile, err := os.Create(path)
 	if err != nil {
@@ -166,6 +184,7 @@ func SaveToCsvGzFile(data []StatForTime, keyMap map[uint8]string, path string, f
 	SaveToCsvWriter(data, keyMap, gzipWriter, fullExport)
 }
 
+// SaveToJSONGzWriter same as SaveToJSONWriter but gunzip file before saving
 func SaveToJSONGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 	gzipWriter := gzip.NewWriter(writerOut)
 	defer gzipWriter.Close()
@@ -173,6 +192,7 @@ func SaveToJSONGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut i
 	SaveToJSONWriter(data, keyMap, gzipWriter, fullExport)
 }
 
+// SaveToJSONGzFile same as SaveToJSONFile but gunzip file before saving
 func SaveToJSONGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	jsonFile, err := os.Create(path)
 	if err != nil {
@@ -186,6 +206,7 @@ func SaveToJSONGzFile(data []StatForTime, keyMap map[uint8]string, path string, 
 	SaveToJSONWriter(data, keyMap, gzipWriter, fullExport)
 }
 
+// SaveToJSLGzWriter same as SaveToJSLWriter but gunzip file before saving
 func SaveToJSLGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 	gzipWriter := gzip.NewWriter(writerOut)
 	defer gzipWriter.Close()
@@ -193,6 +214,7 @@ func SaveToJSLGzWriter(data []StatForTime, keyMap map[uint8]string, writerOut io
 	SaveToJSLWriter(data, keyMap, gzipWriter, fullExport)
 }
 
+// SaveToJSLFile same as SaveToJSLFile but gunzip file before saving
 func SaveToJSLGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	jslFile, err := os.Create(path)
 	if err != nil {

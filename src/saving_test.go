@@ -39,7 +39,7 @@ func BenchmarkCsvSavingOnlySum(b *testing.B) {
 
 	b.ResetTimer()
 
-	SaveToCsvWriter(data, keyMap, tmpFile, true)
+	SaveToCsvWriter(data, keyMap, tmpFile, false)
 }
 
 func BenchmarkCsvSaving(b *testing.B) {
@@ -55,5 +55,5 @@ func BenchmarkCsvSaving(b *testing.B) {
 
 	b.ResetTimer()
 
-	SaveToCsvWriter(data, keyMap, tmpFile, false)
+	SaveToCsvWriter(data, keyMap, tmpFile, true)
 }

@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -10,7 +11,7 @@ import (
 	"strconv"
 )
 
-func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, isOnlySum bool) {
+func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 
 	numKeysInt := make([]int, 0)
 	for key := range keyMap {
@@ -24,7 +25,7 @@ func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.W
 
 	titleLine := make([]string, 0)
 	titleLine = append(titleLine, "Time")
-	if !isOnlySum {
+	if fullExport {
 		for _, key := range numKeys {
 			titleLine = append(titleLine, keyMap[key])
 		}
@@ -39,7 +40,7 @@ func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.W
 		var sum int
 		for _, key := range numKeys {
 			sum += rec.keys[key]
-			if !isOnlySum {
+			if fullExport {
 				line = append(line, strconv.Itoa(rec.keys[key]))
 			}
 		}
@@ -51,7 +52,7 @@ func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.W
 	writer.WriteAll(table)
 }
 
-func SaveToCsvFile(data []StatForTime, keyMap map[uint8]string, path string, isOnlySum bool) {
+func SaveToCsvFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
 	csvfile, err := os.Create(path)
 	if err != nil {
 		log.Fatal(err)
@@ -59,5 +60,44 @@ func SaveToCsvFile(data []StatForTime, keyMap map[uint8]string, path string, isO
 	}
 	defer csvfile.Close()
 
-	SaveToCsvWriter(data, keyMap, csvfile, isOnlySum)
+	SaveToCsvWriter(data, keyMap, csvfile, fullExport)
+}
+
+func SaveToJSONWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
+	type JSONStatForTime struct {
+		Time int64
+		Keys map[string]int
+	}
+
+	table := make([]JSONStatForTime, len(data))
+	for i, stat := range data {
+		table[i].Keys = make(map[string]int)
+
+		table[i].Time = stat.time
+		var sum int
+		for numKey, key := range keyMap {
+			if fullExport {
+				table[i].Keys[key] = stat.keys[numKey]
+			}
+			sum += stat.keys[numKey]
+		}
+		table[i].Keys["sum"] = sum
+	}
+
+	outString, err := json.Marshal(table)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writerOut.Write(outString)
+}
+
+func SaveToJSONFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
+	jsonFile, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jsonFile.Close()
+
+	SaveToJSONWriter(data, keyMap, jsonFile, fullExport)
 }

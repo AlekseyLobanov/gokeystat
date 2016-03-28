@@ -240,6 +240,7 @@ func main() {
 
 	keyboardID := flag.Int("id", -1, "Your keyboard id")
 	outputPath := flag.String("o", "", "Path to export file")
+	fullExport := flag.Bool("full", false, "Export full stats")
 	flag.Parse()
 
 	log.Println("keyboardID =", *keyboardID, "outputPath =", *outputPath)
@@ -299,7 +300,17 @@ func main() {
 			time.Sleep(SLEEP_TIME)
 		}
 	case *outputPath != "":
-		exportingData := GetStatTimesFromDb(db, 0, keyMap) //exporting here
-		SaveToCsvFile(exportingData, keyMap, *outputPath, false)
+		re := regexp.MustCompile("\\.\\S+")
+		filetype := re.FindString(*outputPath)
+		exportingData := GetStatTimesFromDb(db, 0, keyMap)
+		log.Println(filetype)
+		switch filetype {
+		case ".csv":
+			SaveToCsvFile(exportingData, keyMap, *outputPath, *fullExport)
+		case ".json":
+			SaveToJSONFile(exportingData, keyMap, *outputPath, *fullExport)
+		default:
+			log.Fatal("Incorrect file type")
+		}
 	}
 }

@@ -309,6 +309,8 @@ func main() {
 			SaveToCsvFile(exportingData, keyMap, *outputPath, *fullExport)
 		case ".json":
 			SaveToJSONFile(exportingData, keyMap, *outputPath, *fullExport)
+		case ".jsl":
+			SaveToJSLFile(exportingData, keyMap, *outputPath, *fullExport)
 		default:
 			log.Fatal("Incorrect file type")
 		}

@@ -101,3 +101,46 @@ func SaveToJSONFile(data []StatForTime, keyMap map[uint8]string, path string, fu
 
 	SaveToJSONWriter(data, keyMap, jsonFile, fullExport)
 }
+
+func SaveToJSLWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
+	type JSLStatForTime struct {
+		Time int64
+		Keys map[string]int
+	}
+
+	table := make([]JSLStatForTime, len(data))
+	for i, stat := range data {
+		table[i].Keys = make(map[string]int)
+
+		table[i].Time = stat.time
+		var sum int
+		for numKey, key := range keyMap {
+			if fullExport {
+				table[i].Keys[key] = stat.keys[numKey]
+			}
+			sum += stat.keys[numKey]
+		}
+		table[i].Keys["sum"] = sum
+	}
+
+	for ind, line := range table {
+		lineBytes, err := json.Marshal(line)
+		if err != nil {
+			log.Fatal(err)
+		}
+		writerOut.Write(lineBytes)
+		if ind != len(table)-1 {
+			writerOut.Write([]byte("\n"))
+		}
+	}
+}
+
+func SaveToJSLFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
+	jslFile, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jslFile.Close()
+
+	SaveToJSLWriter(data, keyMap, jslFile, fullExport)
+}

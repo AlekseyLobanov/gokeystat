@@ -316,6 +316,8 @@ func main() {
 			SaveToCsvGzFile(exportingData, keyMap, *outputPath, *fullExport)
 		case ".json.gz":
 			SaveToJSONGzFile(exportingData, keyMap, *outputPath, *fullExport)
+		case ".jsl.gz":
+			SaveToJSLGzFile(exportingData, keyMap, *outputPath, *fullExport)
 		default:
 			log.Fatal("Incorrect file type")
 		}

@@ -171,3 +171,16 @@ func SaveToJSONGzFile(data []StatForTime, keyMap map[uint8]string, path string, 
 
 	SaveToJSONWriter(data, keyMap, gzipWriter, fullExport)
 }
+
+func SaveToJSLGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
+	jsonFile, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jsonFile.Close()
+
+	gzipWriter := gzip.NewWriter(jsonFile)
+	defer gzipWriter.Close()
+
+	SaveToJSLWriter(data, keyMap, gzipWriter, fullExport)
+}

@@ -236,7 +236,7 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 	return res
 }
 
-func FindFileType(path string) string {
+func GetFileType(path string) string {
 
 }
 
@@ -305,7 +305,7 @@ func main() {
 		}
 	case *outputPath != "":
 		exportingData := GetStatTimesFromDb(db, 0, keyMap)
-		filetype := findFileType(*outputPath)
+		filetype := GetFileType(*outputPath)
 		log.Println(filetype)
 		switch filetype {
 		case ".csv":

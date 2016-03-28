@@ -3,6 +3,3 @@ go:
   - 1.4
   - 1.5
   - tip
-install:
-  - go get github.com/AlekseyLobanov/gokeystat
-go_import_path: github.com/AlekseyLobanov/gokeystat/src

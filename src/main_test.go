@@ -80,7 +80,7 @@ func TestGetFileType(t *testing.T) {
 	for test, res := range tests {
 		if GetFileType(test) != res {
 			t.Log("On test ", test, " result is ", GetFileType(test), " but right is ", res, "")
+			t.Fail()
 		}
-		t.Fail()
 	}
 }

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/csv"
 	"encoding/json"
 	"io"
@@ -100,4 +101,30 @@ func SaveToJSONFile(data []StatForTime, keyMap map[uint8]string, path string, fu
 	defer jsonFile.Close()
 
 	SaveToJSONWriter(data, keyMap, jsonFile, fullExport)
+}
+
+func SaveToCsvGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
+	jsonFile, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jsonFile.Close()
+
+	gzipWriter := gzip.NewWriter(jsonFile)
+	defer gzipWriter.Close()
+
+	SaveToCsvWriter(data, keyMap, gzipWriter, fullExport)
+}
+
+func SaveToJSONGzFile(data []StatForTime, keyMap map[uint8]string, path string, fullExport bool) {
+	jsonFile, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jsonFile.Close()
+
+	gzipWriter := gzip.NewWriter(jsonFile)
+	defer gzipWriter.Close()
+
+	SaveToJSONWriter(data, keyMap, gzipWriter, fullExport)
 }

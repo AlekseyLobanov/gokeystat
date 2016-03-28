@@ -309,6 +309,10 @@ func main() {
 			SaveToCsvFile(exportingData, keyMap, *outputPath, *fullExport)
 		case ".json":
 			SaveToJSONFile(exportingData, keyMap, *outputPath, *fullExport)
+		case ".csv.gz":
+			SaveToCsvGzFile(exportingData, keyMap, *outputPath, *fullExport)
+		case ".json.gz":
+			SaveToJSONGzFile(exportingData, keyMap, *outputPath, *fullExport)
 		default:
 			log.Fatal("Incorrect file type")
 		}

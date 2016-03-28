@@ -76,7 +76,6 @@ func TestGetFileType(t *testing.T) {
 		"file1.Json.gz":                   "json.gz",
 		"out.csv.json.jsl":                "jsl",
 		"out.jsl.json.csv":                "csv",
-		"stuff.gz":                        "",
 	}
 	for test, res := range tests {
 		if GetFileType(test) != res {

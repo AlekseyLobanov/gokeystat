@@ -237,7 +237,17 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 }
 
 func GetFileType(path string) string {
+	path = strings.ToLower(path)
+	if path[len(path)-3:] == ".gz" {
+		return GetFileType(path[:len(path)-3]) + ".gz"
+	}
 
+	i := len(path) - 1
+	for path[i] != '.' {
+		i--
+	}
+
+	return path[i+1:]
 }
 
 func main() {
@@ -308,18 +318,18 @@ func main() {
 		filetype := GetFileType(*outputPath)
 		log.Println(filetype)
 		switch filetype {
-		case ".csv":
+		case "csv":
 			SaveToCsvFile(exportingData, keyMap, *outputPath, *fullExport)
-		case ".json":
+		case "json":
 			SaveToJSONFile(exportingData, keyMap, *outputPath, *fullExport)
-		case ".jsl":
+		case "jsl":
 			SaveToJSLFile(exportingData, keyMap, *outputPath, *fullExport)
 
-		case ".csv.gz":
+		case "csv.gz":
 			SaveToCsvGzFile(exportingData, keyMap, *outputPath, *fullExport)
-		case ".json.gz":
+		case "json.gz":
 			SaveToJSONGzFile(exportingData, keyMap, *outputPath, *fullExport)
-		case ".jsl.gz":
+		case "jsl.gz":
 			SaveToJSLGzFile(exportingData, keyMap, *outputPath, *fullExport)
 		default:
 			log.Fatal("Incorrect file type")

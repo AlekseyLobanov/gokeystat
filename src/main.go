@@ -237,9 +237,25 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 }
 
 func GetFileType(path string) string {
+	if len(path) == 0 {
+		return ""
+	}
+	Point := false
+	for _, c := range path {
+		if c == '.' {
+			Point = true
+		}
+	}
+	if !Point {
+		return ""
+	}
+
 	path = strings.ToLower(path)
-	if path[len(path)-3:] == ".gz" {
-		return GetFileType(path[:len(path)-3]) + ".gz"
+
+	if len(path) > 3 {
+		if path[len(path)-3:] == ".gz" {
+			return GetFileType(path[:len(path)-3]) + ".gz"
+		}
 	}
 
 	i := len(path) - 1

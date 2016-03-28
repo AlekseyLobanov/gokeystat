@@ -59,3 +59,28 @@ func TestGetKeyNumsFromOutput(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestGetFileType(t *testing.T) {
+	tests := map[string]string{
+		"":                                "",
+		"out.csv":                         "csv",
+		"out.jsl":                         "jsl",
+		"out.json":                        "json",
+		"//sfd.dsf//.f./out.out.csv":      "csv",
+		"..\\data.all.jsl.gz":             "jsl.gz",
+		"../full.csv/first.data.json":     "json",
+		"//sfd.dsf//.f./WhiteBear.csv.Gz": "csv.gz",
+		"out.JsL":                         "jsl",
+		"////////":                        "",
+		"\\\\\\":                          "",
+		"file1.Json.gz":                   "json.gz",
+		"out.csv.json.jsl":                "jsl",
+		"out.jsl.json.csv":                "csv",
+	}
+	for test, res := range tests {
+		if GetFileType(test) != res {
+			t.Log("On test ", test, " result is ", GetFileType(test), " but right is ", res, "")
+		}
+		t.Fail()
+	}
+}

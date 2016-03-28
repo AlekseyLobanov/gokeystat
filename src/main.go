@@ -237,7 +237,7 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 }
 
 func GetFileType(path string) string {
-
+	return ""
 }
 
 func main() {

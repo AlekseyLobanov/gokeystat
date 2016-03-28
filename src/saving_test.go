@@ -89,3 +89,35 @@ func BenchmarkJSONSaving(b *testing.B) {
 
 	SaveToJSONWriter(data, keyMap, tmpFile, true)
 }
+
+func BenchmarkCsvGzSaving(b *testing.B) {
+	data := GenerateRandStatsForTime(b.N)
+	keyMap := GetKeymap()
+
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "benchmark")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer os.Remove(tmpFile.Name())
+
+	b.ResetTimer()
+
+	SaveToCsvGzWriter(data, keyMap, tmpFile, true)
+}
+
+func BenchmarkJSONGzSaving(b *testing.B) {
+	data := GenerateRandStatsForTime(b.N)
+	keyMap := GetKeymap()
+
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "benchmark")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer os.Remove(tmpFile.Name())
+
+	b.ResetTimer()
+
+	SaveToJSONGzWriter(data, keyMap, tmpFile, true)
+}

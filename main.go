@@ -28,6 +28,7 @@ type StatForTime struct {
 	keys map[uint8]int
 }
 
+// StatForTime.Init set time to Now().Unix() and keys to empty map
 func (stat *StatForTime) Init() {
 	stat.time = time.Now().Unix()
 	stat.keys = make(map[uint8]int)
@@ -82,6 +83,7 @@ func GetKeyNumsFromOutput(buf []byte) []uint8 {
 	return keyNums
 }
 
+// GetKeyNumsFromKeyMap returns sorted slice with key nums of keyMap
 func GetKeyNumsFromKeyMap(keyMap map[uint8]string) []int {
 	res := make([]int, 0, len(keyMap))
 	for keyNum := range keyMap {
@@ -147,6 +149,7 @@ func InitDb(db *sql.DB, keyMap map[uint8]string) {
 	tx.Commit()
 }
 
+//AddStatTimeToDb insert statTime to db with using keyMap for extracting key nums
 func AddStatTimeToDb(db *sql.DB, statTime StatForTime, keyMap map[uint8]string) {
 	keyNums := GetKeyNumsFromKeyMap(keyMap)
 	sqlStmt := "insert into keylog(time"
@@ -236,6 +239,8 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 	return res
 }
 
+// GetFileType extract extension from path if we support it
+// Allowed if non-supported result with non supported path is wrong
 func GetFileType(path string) string {
 	if len(path) == 0 {
 		return ""
@@ -261,6 +266,9 @@ func GetFileType(path string) string {
 	i := len(path) - 1
 	for path[i] != '.' {
 		i--
+		if i < 0 {
+			break
+		}
 	}
 
 	return path[i+1:]

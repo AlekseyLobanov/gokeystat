@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	SLEEP_TIME          = 3 * time.Second // time between processing xinput output
+	// time between processing xinput output
+	SLEEP_TIME          = 3 * time.Second
 	KEYBOARD_BUFER_SIZE = 10000
 	DATABASE_NAME       = "file:gokeystat.db?cache=shared&mode=rwc"
 	CAPTURE_TIME        = 5 // time in seconds between capturing keyboard to db
@@ -28,7 +29,7 @@ type StatForTime struct {
 	keys map[uint8]int
 }
 
-// StatForTime.Init set time to Now().Unix() and keys to empty map
+// Init set time to Now().Unix() and keys to empty map
 func (stat *StatForTime) Init() {
 	stat.time = time.Now().Unix()
 	stat.keys = make(map[uint8]int)

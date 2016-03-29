@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"sort"
 	"strconv"
 )
 
@@ -16,17 +15,15 @@ import (
 // if fullExport saves log for each key else only sum for keys
 func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.Writer, fullExport bool) {
 
-	numKeysInt := make([]int, 0)
-	for key := range keyMap {
-		numKeysInt = append(numKeysInt, int(key))
-	}
-	sort.Ints(numKeysInt)
-	numKeys := make([]uint8, 0)
+	numKeysInt := GetKeyNumsFromKeyMap(keyMap)
+
+	var numKeys []uint8
 	for _, key := range numKeysInt {
 		numKeys = append(numKeys, uint8(key))
 	}
 
-	titleLine := make([]string, 0)
+	var titleLine []string
+
 	titleLine = append(titleLine, "Time")
 	if fullExport {
 		for _, key := range numKeys {
@@ -35,10 +32,11 @@ func SaveToCsvWriter(data []StatForTime, keyMap map[uint8]string, writerOut io.W
 	}
 	titleLine = append(titleLine, "Sum")
 
-	table := make([][]string, 0)
+	var table [][]string
+
 	table = append(table, titleLine)
 	for _, rec := range data {
-		line := make([]string, 0)
+		var line []string
 		line = append(line, strconv.Itoa(int(rec.time)))
 		var sum int
 		for _, key := range numKeys {

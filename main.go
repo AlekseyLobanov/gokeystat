@@ -17,10 +17,16 @@ import (
 
 const (
 	// time between processing xinput output
-	SLEEP_TIME          = 3 * time.Second
+	SLEEP_TIME = 3 * time.Second
+
+	// Buffer that we read from xinput
 	KEYBOARD_BUFER_SIZE = 10000
-	DATABASE_NAME       = "file:gokeystat.db?cache=shared&mode=rwc"
-	CAPTURE_TIME        = 5 // time in seconds between capturing keyboard to db
+
+	// Database that stores keylog and other settings
+	DATABASE_NAME = "file:gokeystat.db?cache=shared&mode=rwc"
+
+	// time in seconds between capturing keyboard to db
+	CAPTURE_TIME = 5
 )
 
 // StatForTime stotres pressed keys and beginning time

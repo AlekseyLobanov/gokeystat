@@ -107,7 +107,7 @@ func InitDb(db *sql.DB, keyMap map[uint8]string) {
 	sqlInit := `CREATE TABLE IF NOT EXISTS keylog (
         time INTEGER primary key`
 
-	for keyNum := range keyNums {
+	for _, keyNum := range keyNums {
 		sqlInit += ",\n" + "KEY" + strconv.Itoa(keyNum) + " INTEGER"
 	}
 	sqlInit += "\n);"
@@ -160,12 +160,12 @@ func InitDb(db *sql.DB, keyMap map[uint8]string) {
 func AddStatTimeToDb(db *sql.DB, statTime StatForTime, keyMap map[uint8]string) {
 	keyNums := GetKeyNumsFromKeyMap(keyMap)
 	sqlStmt := "insert into keylog(time"
-	for keyNum := range keyNums {
+	for _, keyNum := range keyNums {
 		sqlStmt += ",\n" + "KEY" + strconv.Itoa(keyNum)
 	}
 	sqlStmt += ") values "
 	sqlStmt += "(" + strconv.FormatInt(statTime.time, 10)
-	for keyNum := range keyNums {
+	for _, keyNum := range keyNums {
 		keyNumber, _ := statTime.keys[uint8(keyNum)]
 		sqlStmt += ",\n" + strconv.Itoa(keyNumber)
 	}

@@ -26,7 +26,7 @@ const (
 	DATABASE_NAME = "file:gokeystat.db?cache=shared&mode=rwc"
 
 	// time in seconds between capturing keyboard to db
-	CAPTURE_TIME = 5
+	CAPTURE_TIME = 900
 )
 
 // StatForTime stotres pressed keys and beginning time
@@ -36,8 +36,8 @@ type StatForTime struct {
 }
 
 // Init set time to Now().Unix() and keys to empty map
-func (stat *StatForTime) Init() {
-	stat.time = time.Now().Unix()
+func (stat *StatForTime) Init(timePeriodEnd int64) {
+	stat.time = timePeriodEnd - CAPTURE_TIME
 	stat.keys = make(map[uint8]int)
 }
 
@@ -322,8 +322,9 @@ func main() {
 		// output of xinput command
 		buf := make([]byte, KEYBOARD_BUFER_SIZE)
 
+		timePeriodEnd := time.Now().Unix() - time.Now().Unix()%CAPTURE_TIME + CAPTURE_TIME
 		var curStat StatForTime
-		curStat.Init()
+		curStat.Init(timePeriodEnd)
 
 		for {
 			n, err := stdout.Read(buf)
@@ -337,9 +338,10 @@ func main() {
 			}
 
 			// Every CAPTURE_TIME seconds save to BD
-			if time.Now().Unix()-curStat.time > CAPTURE_TIME {
+			if time.Now().Unix()-timePeriodEnd > 0 {
 				AddStatTimeToDb(db, curStat, keyMap)
-				curStat.Init()
+				timePeriodEnd += CAPTURE_TIME
+				curStat.Init(timePeriodEnd)
 			}
 
 			time.Sleep(SLEEP_TIME)

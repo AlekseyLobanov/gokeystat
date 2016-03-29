@@ -14,7 +14,7 @@ func GenerateRandStatsForTime(N int) []StatForTime {
 	rnd := rand.New(rand.NewSource(42))
 	for i := 0; i < N; i++ {
 		var curStat StatForTime
-		curStat.Init()
+		curStat.Init(rnd.Int63())
 		for keyNum := range keyMap {
 			if rnd.Float32() > 0.7 {
 				curStat.keys[keyNum] = rnd.Intn(5000)

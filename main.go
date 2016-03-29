@@ -209,7 +209,7 @@ func GetStatTimesFromDb(db *sql.DB, fromTime int64, keyMap map[uint8]string) []S
 	keyNums := GetKeyNumsFromKeyMap(keyMap)
 
 	// result
-	res := make([]StatForTime, 0)
+	var res []StatForTime
 	for rows.Next() {
 		err = rows.Scan(dest...)
 		if err != nil {

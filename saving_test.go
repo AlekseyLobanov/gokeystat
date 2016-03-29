@@ -9,7 +9,7 @@ import (
 )
 
 func GenerateRandStatsForTime(N int) []StatForTime {
-	data := make([]StatForTime, 0)
+	data := make([]StatForTime, N)
 	keyMap := GetKeymap()
 	rnd := rand.New(rand.NewSource(42))
 	for i := 0; i < N; i++ {

@@ -1,4 +1,6 @@
 # gokeystat
+
+[![Join the chat at https://gitter.im/AlekseyLobanov/gokeystat](https://badges.gitter.im/AlekseyLobanov/gokeystat.svg)](https://gitter.im/AlekseyLobanov/gokeystat?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Travis status](https://travis-ci.org/AlekseyLobanov/gokeystat.svg)](https://travis-ci.org/AlekseyLobanov/gokeystat)
 [![Go Report Card](https://goreportcard.com/badge/github.com/alekseylobanov/gokeystat)](https://goreportcard.com/report/github.com/alekseylobanov/gokeystat)
 
